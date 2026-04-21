@@ -188,8 +188,6 @@ curl -X DELETE http://localhost:8080/api/v1/rooms/ROOM-1
 
 A video demonstration is provided separately, showcasing API functionality using Postman.
 
----
-
 ## Conclusion
 
 This project successfully demonstrates the design and implementation of a RESTful API using JAX-RS. It includes proper resource modeling, validation, error handling, and logging, reflecting best practices in backend API development.
