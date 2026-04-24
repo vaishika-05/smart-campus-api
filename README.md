@@ -256,7 +256,6 @@ Question 3
 Using JAX-RS filters for logging is advantageous because they handle cross-cutting concerns in a centralized way. In this project, the LoggingFilter automatically captures all incoming requests and outgoing responses without needing to add logging code inside each resource method.
 If logging was implemented manually using Logger.info() in every method, it would lead to repetitive code and make the application harder to maintain. Any changes to logging would also require modifying multiple classes.
 By using filters, logging is applied consistently across the entire API, keeping the resource classes clean and focused only on business logic. This approach improves code organization, maintainability, and scalability.
-<img width="468" height="642" alt="image" src="https://github.com/user-attachments/assets/13a2cfff-31ae-4853-9e9e-9837f0ff57cf" />
 
 
 ## Conclusion
