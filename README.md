@@ -188,6 +188,77 @@ curl -X DELETE http://localhost:8080/api/v1/rooms/ROOM-1
 
 A video demonstration is provided separately, showcasing API functionality using Postman.
 
+## Report Answers
+
+Part 1: Service Architecture & Setup
+
+Question 1
+
+JAX-RS resource classes use a per-request lifecycle by default, meaning a new instance is created for each incoming HTTP request. This helps ensure thread safety, as each request operates independently.
+In this project, data is stored using static in-memory structures (HashMaps) so that it persists across multiple requests. Without using static variables, data would be lost after each request.
+However, sharing data in this way can lead to concurrency issues, such as race conditions, when multiple requests modify the data at the same time. While this approach is acceptable for a simple system, a real-world application would use a database or proper synchronization to ensure data consistency.
+
+Question 2
+
+HATEOAS is a REST concept where API responses include links to related resources, so clients can navigate through the system dynamically. It is considered an advanced REST feature because it makes the API more self-explanatory and removes the need to hardcode URLs on the client side.
+This approach is helpful for developers because they can understand what actions are available just by looking at the response, instead of depending only on external documentation. It also makes the API easier to maintain, since any changes to endpoints do not necessarily require updates on the client side.
+Part 2: Room Management 
+
+Question 1
+
+When returning a list of rooms, sending only the IDs reduces the size of the response, which helps save network bandwidth and improves performance. However, it means the client has to make additional requests to retrieve full details, which can increase processing time on the client side.
+On the other hand, returning full room objects provides all the necessary information in a single response, making it easier for the client to use the data directly. The downside is that it increases the response size and uses more bandwidth.
+In this project, returning full objects is more practical because it simplifies client-side processing and the amount of data is relatively small.
+
+Question 2
+Yes, the DELETE operation in this implementation is idempotent. An operation is considered idempotent if performing it multiple times results in the same final state.
+In this project, when a client sends a DELETE request for a room, the room is removed from the system if it exists. If the same DELETE request is sent again, the room will no longer be found, and the API returns a 404 error. However, the overall system state remains unchanged after the first successful deletion.
+This means that even though the response may differ (200 for the first request and 404 for subsequent ones), the effect on the system is the same, which satisfies the idempotency property.
+
+Part 3: Sensor Operations & Linking 
+
+Question 1
+
+In this project, the @Consumes (MediaType.APPLICATION_JSON) annotation is used in POST methods such as creating rooms and sensors. This ensures that the API only accepts request bodies in JSON format.
+If a client sends data in a different format, such as text/plain or application/xml, JAX-RS will not be able to match the request to the method. As a result, the server automatically returns a 415 Unsupported Media Type error.
+This is important in this implementation because the API expects JSON objects to map directly to Java classes like Room and Sensor. Using a different format would prevent proper deserialization and cause the request to fail. This helps maintain consistency and ensures that only valid data is processed by the system.
+
+Question 2
+
+In this project, sensor filtering is implemented using @QueryParam, for example /api/v1/sensors?type=Temperature. This allows clients to retrieve sensors based on type while still using the same main endpoint.
+An alternative approach would be to include the type in the URL path, such as /api/v1/sensors/type/CO2. However, this would make the API less flexible and harder to extend. For example, if additional filters were needed in the future (such as status), the URL structure would become more complicated.
+Using query parameters is more suitable in this implementation because sensors are treated as a collection, and filtering is simply a way to refine the results. It also keeps the API cleaner and makes it easier for clients to combine multiple filtering options without changing the endpoint structure.
+
+Part 4: Deep Nesting with Sub - Resources 
+
+Question 1 
+
+In this project, the sub-resource locator pattern is used by delegating sensor reading operations to a separate class (SensorReadingResource) instead of handling everything within SensorResource. This means that requests to /sensors/{id}/readings are passed to a dedicated class responsible only for reading-related functionality.
+This design improves the overall structure of the API by separating responsibilities. Each class focuses on a specific part of the system, which makes the code easier to read and maintain. For example, sensor-related logic is kept separate from reading-related logic.
+If all nested endpoints were implemented in a single class, the code would quickly become complex and difficult to manage. By splitting the logic into smaller components, the API becomes more organized and easier to extend as new features are added.
+
+Part 5: Advanced Error Handling, Exception Mapping & Logging
+
+Question 1
+
+HTTP 422 is more appropriate than 404 when the request itself is valid, but the data inside it is incorrect. In this project, for example, when creating a sensor, the JSON format may be correct, but the provided roomId might not exist.
+A 404 error usually indicates that the requested endpoint or resource cannot be found, whereas in this case, the endpoint exists and the request structure is valid. The issue is specifically with the data provided in the request.
+Using 422 clearly communicates that the server understood the request but could not process it due to invalid input data. This makes the API more precise and easier for clients to understand and debug.
+
+Question 2
+
+Exposing internal Java stack traces to API consumers can create serious security risks. A stack trace can reveal detailed information about the system, such as class names, package structure, file paths, and the technologies being used.
+An attacker could use this information to understand how the application is built and identify potential weaknesses. For example, knowing the exact libraries or frameworks used may help them target known vulnerabilities. File paths and method names can also give clues about the internal logic of the system.
+In this project, a global exception handler is used to prevent such exposure by returning a generic error message instead of detailed stack traces. This helps protect internal system details and improves overall security.
+
+Question 3 
+
+Using JAX-RS filters for logging is advantageous because they handle cross-cutting concerns in a centralized way. In this project, the LoggingFilter automatically captures all incoming requests and outgoing responses without needing to add logging code inside each resource method.
+If logging was implemented manually using Logger.info() in every method, it would lead to repetitive code and make the application harder to maintain. Any changes to logging would also require modifying multiple classes.
+By using filters, logging is applied consistently across the entire API, keeping the resource classes clean and focused only on business logic. This approach improves code organization, maintainability, and scalability.
+<img width="468" height="642" alt="image" src="https://github.com/user-attachments/assets/13a2cfff-31ae-4853-9e9e-9837f0ff57cf" />
+
+
 ## Conclusion
 
 This project successfully demonstrates the design and implementation of a RESTful API using JAX-RS. It includes proper resource modeling, validation, error handling, and logging, reflecting best practices in backend API development.
